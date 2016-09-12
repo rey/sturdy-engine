@@ -14,6 +14,11 @@
 
 # pandoc -f markdown index.md > index.html
 
+# The location of the folder where all the magic happens
+WORKSPACE_FOLDER=/tmp/sturdy-engine
+
+
+
 # Get the OS flavour (eg. Linux or Darwin)
 function getOS() {
   OS=`uname`
@@ -22,7 +27,7 @@ function getOS() {
 
 # Check the prerequisite software is installed
 function checkDependencies() {
-  which pandoc
+which pandoc
   # if which command was successful then
   if [ $? -eq 0 ]; then
     echo "pandoc is installed, proceeding"
@@ -37,7 +42,11 @@ function checkDependencies() {
   fi
 }
 
-function createNewPost() {
+function createTimestamp() {
+ TIMESTAMP=`date +%d%m%y-%H%M%S`
+}
+
+function readLink() {
   echo "Enter the link" && read LINK
 }
 
@@ -46,25 +55,47 @@ function checkLink() {
   regex="(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]"
   if [[ ${LINK} =~ ${regex} ]]
   then 
-      echo "Link valid"
+    echo "Seems to be a valid link, proceeding"
   else
-      echo "Link not valid"
+    echo "Link doesn't seem to be valid"
+    exit
   fi
 }
 
+function createWorkspace() {
+  mkdir ${WORKSPACE_FOLDER}
+}
+
+function enterDescription() {
+  
+  POST="post-${TIMESTAMP}"
+
+  echo "${LINK}" > ${WORKSPACE_FOLDER}/${POST}
+
+  vim ${WORKSPACE_FOLDER}/${POST}
+
+}
+
+function destroyWorkspace() {
+  rm -rf ${WORKSPACE_FOLDER}
+}
 
 
-trap EXIT
+# trap destroyWorkspace EXIT
 
 
 
 
-# getOS
-# checkDependencies
-createNewPost
+getOS
+checkDependencies
+createTimestamp
+readLink
 checkLink
+createWorkspace
+enterDescription
 # enterDescription
 # getArchiveLink
 # convertToMarkdown
 # appendToNewsLetter
+
 
